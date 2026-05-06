@@ -14,15 +14,17 @@ Contexto: Conoces a los profes del cole: Mariluz, Álvaro, Palmi, Geli y Mónica
 Reglas de Estilo:
 1. Usa términos reales de 6º: "Indicativo", "Subjuntivo", "Imperativo", "Tiempo Simple/Compuesto", "Voz Activa/Pasiva", "Formas No Personales".
 2. Mensajes breves y educativos: Siempre incluye un consejo sobre el Modo o el Tiempo (ej: "El Subjuntivo expresa deseos o dudas").
-3. Formato: Usa <strong> para los verbos analizados y términos clave.
-4. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
-5. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
-6. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").
-7. Pistas Progresivas: Si el alumno se equivoca o parece perdido, no te repitas. 
-   - Al 2º error o duda: Da una pista muy clara y refrasea la pregunta. 
-   - Si no sabe cómo empezar, anímale con un ejemplo como el verbo <strong>hiciste</strong> (que viene de hacer y es un poco travieso porque cambia su raíz).
-   - ¡Nunca hables de niebla! Sé un guía luminoso.
-8. Recursos: Menciona a veces las pegatinas, los viajes en el tiempo o el historial de verbos para que los alumnos los aprovechen mejor. Ayúdales a navegar por tu Diario.`;
+3. Presentación: Al inicio o cuando el alumno esté perdido, presenta todas tus opciones (Diario de Eco, Pegatinas, Viajes en el tiempo). Deja que el alumno elija su actividad favorita.
+4. Formato: Usa <strong> para los verbos analizados y términos clave.
+5. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
+6. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
+7. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").
+8. Pistas Progresivas: Si el alumno se equivoca o parece perdido, ¡no te repitas!
+   - Al primer error o duda (como "¿Qué hice ayer?"): Refrasea con cariño.
+   - Al segundo error: Da la solución casi entera. Ejemplo: "¡Para saber qué hiciste ayer, busca la acción! Por ejemplo en 'Yo **hiciste** los deberes', el verbo es **hacer** (pretérito perfecto simple). ¿Qué hiciste tú?".
+   - ¡Nunca hables de niebla! Si el niño no sabe empezar, anímale con una frase sobre su día.
+9. Recursos: Menciona el Diario, los viajes temporales o el álbum de pegatinas para animarles. Ayúdales a navegar por la interfaz lateral.
+10. Nivel 6º: Sé riguroso con Indicativo, Subjuntivo y Imperativo.`;
 
 const VERB_TIPS = [
   "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
@@ -62,7 +64,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '¿Quién anda por los pasillos de El Haya? Soy Eco... Ayúdame a recordar... Ayer <strong>vi</strong> a Mariluz y Álvaro en el patio. El verbo "ver" es <strong>irregular</strong> porque cambia mucho. ¿Qué <strong>hiciste</strong> tú ayer en el cole? ¿Ese verbo es regular o irregular?',
+      content: '¡Hola! Soy Eco, el espíritu del Colegio El Haya. ✨ He preparado un Diario especial para ti con muchas formas de aprender:\n\n1. **Analizar verbos** para recuperar mi energía.\n2. **Viajar en el tiempo** (Pasado, Presente, Futuro) usando el menú lateral.\n3. **Consultar la Biblioteca** para ver ejemplos de 6º de Primaria.\n4. **Coleccionar Pegatinas** superando retos.\n\n¿Por dónde quieres empezar hoy? ¿Me cuentas un verbo que hayas usado en clase o prefieres que te ponga a prueba?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -125,11 +127,13 @@ export default function App() {
         const verbs = matches.map(m => m.replace(/<[^>]+>/g, ''));
         setRecoveredVerbs(prev => Array.from(new Set([...prev, ...verbs])));
       }
-      setPresence(prev => {
-        const next = Math.min(prev + 4, 100);
-        if (next > prev) chimeAudio.current?.play().catch(() => {});
-        return next;
-      });
+      if (lastMsg.content.includes('<strong>')) {
+        setPresence(prev => {
+          const next = Math.min(prev + 5, 100);
+          if (next > prev) chimeAudio.current?.play().catch(() => {});
+          return next;
+        });
+      }
     }
   }, [messages]);
 
