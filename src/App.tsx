@@ -17,7 +17,8 @@ Reglas de Estilo:
 3. Formato: Usa <strong> para los verbos analizados y términos clave.
 4. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
 5. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
-6. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").`;
+6. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").
+7. Pistas ante errores: Si el alumno se equivoca, nunca hables de "niebla". En su lugar, dale una pista clara (ej: "¡Casi lo tienes! Mira bien el final de la palabra...") para que sepa cómo corregirse.`;
 
 const VERB_TIPS = [
   "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
@@ -158,7 +159,7 @@ export default function App() {
       const result = await ai.models.generateContent({ model: MODEL_NAME, contents: contents });
       setMessages((prev) => [...prev, { role: 'assistant', content: result.text || '...' }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ La niebla se espesa... intenta hablarme de nuevo.' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Mis fuerzas flaquean... intenta hablarme de nuevo con un verbo claro.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -275,13 +276,13 @@ export default function App() {
           </main>
         </section>
 
-        <aside className="hidden xl:flex w-80 glass-panel border-l border-stone-800/50 p-8 flex-col space-y-8 overflow-y-auto custom-scrollbar">
-          <div className="p-4 rounded-2xl bg-spirit-gold/5 border border-spirit-gold/20 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 transition-opacity">
-              <Sparkles className="w-4 h-4 text-spirit-gold" />
+        <aside className="hidden xl:flex w-80 glass-panel border-l border-stone-800/50 p-8 flex-col space-y-10 overflow-y-auto custom-scrollbar shadow-inner bg-stone-950/40">
+          <div className="p-5 rounded-2xl bg-spirit-gold/10 border-2 border-spirit-gold/30 relative overflow-hidden group shadow-[0_0_20px_rgba(194,156,109,0.1)]">
+            <div className="absolute top-0 right-0 p-3 opacity-30 group-hover:opacity-60 transition-opacity">
+              <Sparkles className="w-5 h-5 text-spirit-gold" />
             </div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-spirit-gold mb-2 flex items-center">
-              <BookOpen className="w-3 h-3 mr-2" /> Consejo Espectral
+            <h4 className="text-[11px] font-black uppercase tracking-[0.25em] text-spirit-gold mb-3 flex items-center">
+              <BookOpen className="w-4 h-4 mr-2" /> Consejo Espectral
             </h4>
             <AnimatePresence mode="wait">
               <motion.p 
@@ -289,15 +290,15 @@ export default function App() {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="text-xs text-stone-300 leading-relaxed italic"
+                className="text-sm text-stone-100 leading-relaxed italic font-medium"
               >
                 "{VERB_TIPS[currentTipIndex]}"
               </motion.p>
             </AnimatePresence>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="micro-caps border-b border-stone-800 pb-2">Tiempos del Verbo</h3>
+          <div className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 border-b border-stone-800/50 pb-3">Tiempos del Verbo</h3>
             <div className="space-y-3">
               {['pasado', 'presente', 'futuro'].map((id) => (
                 <div key={id} className={`flex items-center space-x-3 p-3 rounded-xl border transition-all ${activeRoom === id ? 'bg-stone-900 border-spirit-gold/30' : 'opacity-30 border-transparent grayscale'}`}>
@@ -308,8 +309,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="micro-caps border-b border-stone-800 pb-2">Análisis de Verbos</h3>
+          <div className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 border-b border-stone-800/50 pb-3">Análisis de Verbos</h3>
             <div className="flex flex-wrap gap-2">
               {recoveredVerbs.length === 0 ? <p className="text-[10px] italic text-stone-600">Analiza un verbo para empezar...</p> : 
                 recoveredVerbs.map((v, i) => (
@@ -321,8 +322,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="micro-caps border-b border-stone-800 pb-2">Álbum de Pegatinas</h3>
+          <div className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 border-b border-stone-800/50 pb-3">Álbum de Pegatinas</h3>
             <div className="grid grid-cols-2 gap-3">
               {achievements.map((ach) => (
                 <motion.div
@@ -354,11 +355,30 @@ export default function App() {
         </aside>
       </div>
 
-      <footer className="relative z-10 p-6 md:p-10 glass-panel border-t-0 shadow-2xl">
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex items-center space-x-6">
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Analiza el verbo para Eco..." className="flex-1 bg-stone-900/80 border border-stone-700/50 rounded-full py-4 px-8 focus:border-spirit-gold/50 text-stone-100 placeholder-stone-600 italic text-lg" />
-          <button type="submit" disabled={isLoading || !input.trim()} className="w-16 h-16 rounded-full bg-stone-900 border border-stone-600 flex items-center justify-center text-stone-300 hover:scale-110 transition-all hover:bg-stone-800 group disabled:opacity-50">
-            <Send className="w-6 h-6 group-hover:text-spirit-gold" />
+      <footer className="relative z-10 p-4 md:px-10 glass-panel border-t-0 shadow-2xl">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex items-center space-x-4">
+          <div className="relative flex-1 group">
+             <div className="absolute inset-0 bg-spirit-gold/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+             <input 
+               type="text" 
+               value={input} 
+               onChange={(e) => setInput(e.target.value)} 
+               placeholder="Analiza el verbo para Eco..." 
+               className="relative w-full bg-stone-900/90 border-2 border-stone-800 focus:border-spirit-gold rounded-2xl py-3 px-6 text-stone-100 placeholder-stone-600 italic text-base transition-all shadow-[0_0_15px_rgba(0,0,0,0.3)] group-focus-within:shadow-[0_0_20px_rgba(194,156,109,0.15)]" 
+             />
+          </div>
+          <button 
+            type="submit" 
+            disabled={isLoading || !input.trim()} 
+            className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-spirit-gold to-amber-600 text-stone-950 flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all hover:brightness-110 disabled:opacity-50 disabled:grayscale"
+          >
+            {isLoading ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+                <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
+              </motion.div>
+            ) : (
+              <Send className="w-5 h-5 md:w-6 md:h-6" />
+            )}
           </button>
         </form>
       </footer>
