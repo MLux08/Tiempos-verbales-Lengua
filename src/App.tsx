@@ -18,7 +18,7 @@ Reglas de Estilo:
 4. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
 5. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
 6. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").
-7. Pistas ante errores: Si el alumno se equivoca, nunca hables de "niebla". En su lugar, dale una pista clara (ej: "¡Casi lo tienes! Mira bien el final de la palabra...") para que sepa cómo corregirse.`;
+7. Pistas ante errores: Si el alumno se equivoca, nunca hables de "niebla". En su lugar, dale una pista clara y refrasea tu pregunta de otra manera para que sepa exactamente qué le pides (ej: "¡Casi lo tienes! Lo que quiero saber es...").`;
 
 const VERB_TIPS = [
   "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
@@ -56,14 +56,14 @@ export default function App() {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
-  const [achievements, setAchievements] = useState<{id: string, label: string, icon: string, unlocked: boolean}[]>([
-    { id: 'start', label: 'Primer Encuentro', icon: '👻', unlocked: true },
-    { id: 'verbs_3', label: 'Maestro de Raíces', icon: '🌱', unlocked: false },
-    { id: 'verbs_5', label: 'Explorador de El Haya', icon: '🎒', unlocked: false },
-    { id: 'verbs_10', label: 'Historiador del Cole', icon: '📜', unlocked: false },
-    { id: 'presence_80', label: 'Luz Espectral', icon: '✨', unlocked: false },
-    { id: 'presence_100', label: 'Eco Total', icon: '🔥', unlocked: false },
-    { id: 'room_change', label: 'Viajero del Tiempo', icon: '⌛', unlocked: false },
+  const [achievements, setAchievements] = useState<{id: string, label: string, icon: string, unlocked: boolean, color: string}[]>([
+    { id: 'start', label: 'Primer Encuentro', icon: '👻', unlocked: true, color: '#FFD700' },
+    { id: 'verbs_3', label: 'Maestro de Raíces', icon: '🌱', unlocked: false, color: '#4ADE80' },
+    { id: 'verbs_5', label: 'Explorador El Haya', icon: '🎒', unlocked: false, color: '#60A5FA' },
+    { id: 'verbs_10', label: 'Historiador', icon: '📜', unlocked: false, color: '#F87171' },
+    { id: 'presence_80', label: 'Luz Espectral', icon: '✨', unlocked: false, color: '#C084FC' },
+    { id: 'presence_100', label: 'Eco Total', icon: '🔥', unlocked: false, color: '#FB923C' },
+    { id: 'room_change', label: 'Viajero Tiempo', icon: '⌛', unlocked: false, color: '#2DD4BF' },
   ]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -159,7 +159,7 @@ export default function App() {
       const result = await ai.models.generateContent({ model: MODEL_NAME, contents: contents });
       setMessages((prev) => [...prev, { role: 'assistant', content: result.text || '...' }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Mis fuerzas flaquean... intenta hablarme de nuevo con un verbo claro.' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Ups, no te he entendido bien... ¿puedes decirme el verbo otra vez de forma más clarita? ¡Eco está atento!' }]);
     } finally {
       setIsLoading(false);
     }
@@ -323,23 +323,52 @@ export default function App() {
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 border-b border-stone-800/50 pb-3">Álbum de Pegatinas</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {achievements.map((ach) => (
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 border-b border-stone-800/50 pb-3 flex justify-between items-center">
+              <span>Álbum de Pegatinas</span>
+              <span className="text-spirit-gold">{achievements.filter(a => a.unlocked).length}/{achievements.length}</span>
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {achievements.map((ach, idx) => (
                 <motion.div
                   key={ach.id}
                   initial={false}
                   animate={{ 
-                    scale: ach.unlocked ? 1 : 0.9,
-                    opacity: ach.unlocked ? 1 : 0.2,
-                    rotate: ach.unlocked ? [0, -5, 5, 0] : 0,
+                    scale: ach.unlocked ? 1 : 0.85,
+                    opacity: ach.unlocked ? 1 : 0.15,
+                    rotate: ach.unlocked ? (idx % 2 === 0 ? -3 : 3) : 0,
                   }}
-                  whileHover={ach.unlocked ? { scale: 1.1, rotate: 0 } : {}}
-                  className={`flex flex-col items-center justify-center p-3 rounded-2xl border aspect-square relative ${ach.unlocked ? 'bg-white shadow-[0_4px_10px_rgba(0,0,0,0.3)] border-stone-200' : 'bg-transparent border-stone-800'}`}
+                  whileHover={ach.unlocked ? { scale: 1.1, rotate: 0, zIndex: 10 } : {}}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-4 aspect-square relative overflow-hidden transition-all duration-500 ${
+                    ach.unlocked 
+                      ? 'bg-white shadow-[8px_8px_0px_rgba(0,0,0,0.2)] border-white' 
+                      : 'bg-transparent border-stone-800'
+                  }`}
                 >
-                  <span className={`text-3xl mb-1 ${ach.unlocked ? 'drop-shadow-sm' : 'grayscale brightness-50'}`}>{ach.icon}</span>
-                  <p className={`text-[8px] text-center font-black tracking-tighter uppercase leading-none ${ach.unlocked ? 'text-stone-800' : 'text-stone-600'}`}>{ach.label}</p>
-                  {ach.unlocked && <div className="absolute -top-1 -right-1 w-3 h-3 bg-spirit-gold rounded-full border border-white" />}
+                  {/* Subtle sticker texture */}
+                  {ach.unlocked && <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')]" />}
+                  
+                  <span className={`text-4xl mb-1 ${ach.unlocked ? 'drop-shadow-md' : 'grayscale brightness-50'}`}>
+                    {ach.icon}
+                  </span>
+                  <p className={`text-[8px] text-center font-black tracking-tighter uppercase leading-none px-1 ${
+                    ach.unlocked ? 'text-stone-800' : 'text-stone-700'
+                  }`}>
+                    {ach.label}
+                  </p>
+                  
+                  {ach.unlocked && (
+                    <>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-spirit-gold rounded-full border-2 border-white shadow-sm flex items-center justify-center">
+                        <Sparkles className="w-2 h-2 text-white" />
+                      </div>
+                      {/* Shine effect */}
+                      <motion.div 
+                        className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent -translate-x-full"
+                        animate={{ translateX: ['100%', '-100%'] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 5 }}
+                      />
+                    </>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -358,13 +387,13 @@ export default function App() {
       <footer className="relative z-10 p-4 md:px-10 glass-panel border-t-0 shadow-2xl">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex items-center space-x-4">
           <div className="relative flex-1 group">
-             <div className="absolute inset-0 bg-spirit-gold/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+             <div className="absolute inset-0 bg-spirit-gold/20 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
              <input 
                type="text" 
                value={input} 
                onChange={(e) => setInput(e.target.value)} 
                placeholder="Analiza el verbo para Eco..." 
-               className="relative w-full bg-stone-900/90 border-2 border-stone-800 focus:border-spirit-gold rounded-2xl py-3 px-6 text-stone-100 placeholder-stone-600 italic text-base transition-all shadow-[0_0_15px_rgba(0,0,0,0.3)] group-focus-within:shadow-[0_0_20px_rgba(194,156,109,0.15)]" 
+               className="relative w-full bg-stone-900/95 border-2 border-stone-800 focus:border-spirit-gold rounded-2xl py-3 px-6 text-stone-100 placeholder-stone-600 italic text-base transition-all shadow-[0_0_15px_rgba(0,0,0,0.4)] group-focus-within:shadow-[0_0_30px_rgba(194,156,109,0.3)]" 
              />
           </div>
           <button 
