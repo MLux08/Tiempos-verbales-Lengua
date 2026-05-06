@@ -40,7 +40,10 @@ export default function App() {
   const [achievements, setAchievements] = useState<{id: string, label: string, icon: string, unlocked: boolean}[]>([
     { id: 'start', label: 'Primer Encuentro', icon: '👻', unlocked: true },
     { id: 'verbs_3', label: 'Maestro de Raíces', icon: '🌱', unlocked: false },
+    { id: 'verbs_5', label: 'Explorador de El Haya', icon: '🎒', unlocked: false },
+    { id: 'verbs_10', label: 'Historiador del Cole', icon: '📜', unlocked: false },
     { id: 'presence_80', label: 'Luz Espectral', icon: '✨', unlocked: false },
+    { id: 'presence_100', label: 'Eco Total', icon: '🔥', unlocked: false },
     { id: 'room_change', label: 'Viajero del Tiempo', icon: '⌛', unlocked: false },
   ]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -96,7 +99,10 @@ export default function App() {
         if (ach.unlocked) return ach;
         let shouldUnlock = false;
         if (ach.id === 'verbs_3' && recoveredVerbs.length >= 3) shouldUnlock = true;
+        if (ach.id === 'verbs_5' && recoveredVerbs.length >= 5) shouldUnlock = true;
+        if (ach.id === 'verbs_10' && recoveredVerbs.length >= 10) shouldUnlock = true;
         if (ach.id === 'presence_80' && presence >= 80) shouldUnlock = true;
+        if (ach.id === 'presence_100' && presence >= 100) shouldUnlock = true;
         if (ach.id === 'room_change' && activeRoom !== 'pasado') shouldUnlock = true;
         
         if (shouldUnlock) {
@@ -146,15 +152,15 @@ export default function App() {
       <div className="fixed inset-0 z-[-2] overflow-hidden pointer-events-none">
         {/* Main Clock Face */}
         <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vh] h-[120vh] opacity-10 grayscale clock-bg"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vh] h-[120vh] opacity-25 clock-bg"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1509048191080-d2984bad6ad5?auto=format&fit=crop&q=80&w=1000')" , backgroundSize: 'cover'}}
         />
         
         {/* Animated Gears */}
-        <Gear className="absolute -top-10 -left-10 w-40 h-40 text-stone-800 gear-rotate opacity-20" />
-        <Gear className="absolute top-1/4 -right-20 w-64 h-64 text-stone-900 gear-rotate-reverse opacity-10" />
-        <Gear className="absolute -bottom-20 left-1/4 w-48 h-48 text-stone-800 gear-rotate opacity-15" />
-        <Gear className="absolute bottom-1/3 right-1/4 w-20 h-20 text-spirit-gold/20 gear-rotate-reverse opacity-20" />
+        <Gear className="absolute -top-10 -left-10 w-40 h-40 text-spirit-gold/20 gear-rotate opacity-40" />
+        <Gear className="absolute top-1/4 -right-20 w-64 h-64 text-spirit-gold/10 gear-rotate-reverse opacity-30" />
+        <Gear className="absolute -bottom-20 left-1/4 w-48 h-48 text-spirit-gold/15 gear-rotate opacity-35" />
+        <Gear className="absolute bottom-1/3 right-1/4 w-20 h-20 text-spirit-gold/30 gear-rotate-reverse opacity-40" />
       </div>
 
       <div className="atmosphere" />
@@ -250,7 +256,7 @@ export default function App() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="micro-caps border-b border-stone-800 pb-2">Logros y Pegatinas</h3>
+            <h3 className="micro-caps border-b border-stone-800 pb-2">Álbum de Pegatinas</h3>
             <div className="grid grid-cols-2 gap-3">
               {achievements.map((ach) => (
                 <motion.div
@@ -258,13 +264,15 @@ export default function App() {
                   initial={false}
                   animate={{ 
                     scale: ach.unlocked ? 1 : 0.9,
-                    opacity: ach.unlocked ? 1 : 0.3,
-                    filter: ach.unlocked ? 'grayscale(0)' : 'grayscale(1)'
+                    opacity: ach.unlocked ? 1 : 0.2,
+                    rotate: ach.unlocked ? [0, -5, 5, 0] : 0,
                   }}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border ${ach.unlocked ? 'bg-stone-800 border-spirit-gold/40 shadow-[0_0_10px_rgba(194,156,109,0.1)]' : 'bg-transparent border-stone-800'} transition-all`}
+                  whileHover={ach.unlocked ? { scale: 1.1, rotate: 0 } : {}}
+                  className={`flex flex-col items-center justify-center p-3 rounded-2xl border aspect-square relative ${ach.unlocked ? 'bg-white shadow-[0_4px_10px_rgba(0,0,0,0.3)] border-stone-200' : 'bg-transparent border-stone-800'}`}
                 >
-                  <span className="text-2xl mb-1">{ach.icon}</span>
-                  <p className="text-[9px] text-center font-bold tracking-tighter uppercase leading-none text-stone-400">{ach.label}</p>
+                  <span className={`text-3xl mb-1 ${ach.unlocked ? 'drop-shadow-sm' : 'grayscale brightness-50'}`}>{ach.icon}</span>
+                  <p className={`text-[8px] text-center font-black tracking-tighter uppercase leading-none ${ach.unlocked ? 'text-stone-800' : 'text-stone-600'}`}>{ach.label}</p>
+                  {ach.unlocked && <div className="absolute -top-1 -right-1 w-3 h-3 bg-spirit-gold rounded-full border border-white" />}
                 </motion.div>
               ))}
             </div>

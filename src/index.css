@@ -33,8 +33,8 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.6;
-  z-index: -1;
+  opacity: 0.3;
+  z-index: -3;
 }
 
 .gear-rotate {
@@ -56,8 +56,8 @@
 }
 
 .clock-bg {
-  mask-image: radial-gradient(circle, black 40%, transparent 80%);
-  filter: sepia(1) contrast(0.8) brightness(0.4);
+  mask-image: radial-gradient(circle, black 60%, transparent 95%);
+  filter: sepia(0.5) contrast(1.1) brightness(0.8);
 }
 
 .glass-panel {
@@ -98,7 +98,7 @@
 .vignette {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle, transparent 20%, rgba(12,10,9,0.9) 100%);
+  background: radial-gradient(circle, transparent 40%, rgba(12,10,9,0.7) 100%);
   z-index: -1;
   pointer-events: none;
 }
