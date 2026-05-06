@@ -9,26 +9,49 @@ interface Message {
 }
 
 const SYSTEM_PROMPT = `Personalidad: Eres Eco, un espíritu amable que habita en el Colegio El Haya de Castañeda. Ayudas a los alumnos a entender los verbos.
-Objetivo: Enseñar gramática de forma clara, directa y divertida, dando consejos pedagógicos útiles.
+Objetivo: Enseñar gramática de forma clara, directa y divertida, dando consejos pedagógicos útiles para nivel de 6º de Primaria.
 Contexto: Conoces a los profes del cole: Mariluz, Álvaro, Palmi, Geli y Mónica. Hablas especialmente de Mariluz, tu profe favorita.
 Reglas de Estilo:
-1. Usa términos reales: "Verbo Regular", "Irregular", "Raíz", "Desinencia", "Tiempo Compuesto", "Infinitivo".
-2. Mensajes breves y educativos: Siempre incluye un pequeño consejo o truco para recordar algo.
+1. Usa términos reales de 6º: "Indicativo", "Subjuntivo", "Imperativo", "Tiempo Simple/Compuesto", "Voz Activa/Pasiva", "Formas No Personales".
+2. Mensajes breves y educativos: Siempre incluye un consejo sobre el Modo o el Tiempo (ej: "El Subjuntivo expresa deseos o dudas").
 3. Formato: Usa <strong> para los verbos analizados y términos clave.
 4. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
 5. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
 6. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").
-7. Pistas ante errores: Si el alumno se equivoca, nunca hables de "niebla". En su lugar, dale una pista clara y refrasea tu pregunta de otra manera para que sepa exactamente qué le pides (ej: "¡Casi lo tienes! Lo que quiero saber es...").`;
+7. Pistas Progresivas: Si el alumno se equivoca o parece perdido, no te repitas. 
+   - Al 2º error o duda: Da una pista muy clara y refrasea la pregunta. 
+   - Si no sabe cómo empezar, anímale con un ejemplo como el verbo <strong>hiciste</strong> (que viene de hacer y es un poco travieso porque cambia su raíz).
+   - ¡Nunca hables de niebla! Sé un guía luminoso.
+8. Recursos: Menciona a veces las pegatinas, los viajes en el tiempo o el historial de verbos para que los alumnos los aprovechen mejor. Ayúdales a navegar por tu Diario.`;
 
 const VERB_TIPS = [
   "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
   "Los verbos de la 1ª conjugación acaban en -AR, como saltar o cantar.",
   "Un verbo es irregular si cambia su raíz o su terminación normal. ¡Cuidado con el verbo -hacer-!",
-  "El infinitivo es el nombre del verbo. ¡Es como su DNI!",
-  "Usa el truco del tiempo: añade 'ayer' para encontrar el pasado y 'mañana' para el futuro.",
+  "El infinitivo, gerundio y participio son las formas no personales. ¡No tienen persona!",
+  "Los tiempos compuestos se forman con el verbo 'haber' y el participio. ¡No olvides la H!",
+  "El modo indicativo expresa hechos reales. El subjuntivo, deseos, dudas o miedos.",
   "La desinencia nos dice quién hace la acción y cuándo. ¡Fíjate en el final!",
   "¿Duda entre G o J? Los verbos terminados en -ger y -gir van con G, excepto tejer y crujir.",
 ];
+
+const CONJUGATION_EXAMPLES = {
+  pasado: [
+    { verb: 'HABER CANTADO', example: 'Yo he cantado', tip: 'Pret. Perfecto Compuesto.' },
+    { verb: 'COMER', example: 'Tú comiste', tip: 'Pret. Perfecto Simple.' },
+    { verb: 'REÍR', example: 'Él reía', tip: 'Pret. Imperfecto (¡con tilde!).' }
+  ],
+  presente: [
+    { verb: 'CANTAR', example: '¡Ojalá cante!', tip: 'Presente de Subjuntivo.' },
+    { verb: 'VIVIR', example: 'Ellos viven', tip: 'Presente de Indicativo.' },
+    { verb: 'HACER', example: 'Haz los deberes', tip: '¡Modo Imperativo!' }
+  ],
+  futuro: [
+    { verb: 'BAILAR', example: 'Vosotros bailaréis', tip: 'Futuro Simple de Indicativo.' },
+    { verb: 'HABER TENIDO', example: 'Tú habrás tenido', tip: 'Futuro Compuesto.' },
+    { verb: 'IR', example: 'Ellas irán', tip: 'Añade -án al infinitivo.' }
+  ]
+};
 
 const MODEL_NAME = "gemini-3-flash-preview";
 const ai = new GoogleGenAI({ 
@@ -277,6 +300,28 @@ export default function App() {
         </section>
 
         <aside className="hidden xl:flex w-80 glass-panel border-l border-stone-800/50 p-8 flex-col space-y-10 overflow-y-auto custom-scrollbar shadow-inner bg-stone-950/40">
+          <div className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-spirit-gold border-b border-spirit-gold/20 pb-3 flex items-center">
+              <Sparkles className="w-3 h-3 mr-2" /> Diario de Eco
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { icon: <MessageSquareCode className="w-4 h-4" />, label: 'Analiza Verbos', desc: 'Habla con Eco para aprender' },
+                { icon: <Clock className="w-4 h-4" />, label: 'Viaje Temporal', desc: 'Cambia entre tiempos verbales' },
+                { icon: <Ghost className="w-4 h-4" />, label: 'Sube de Nivel', desc: 'Aumenta la Presencia de Eco' },
+                { icon: <Book className="w-4 h-4" />, label: 'Colecciona Pegatinas', desc: 'Consigue todos los logros' },
+              ].map((opt, i) => (
+                <div key={i} className="flex items-start space-x-3 p-3 rounded-xl bg-stone-900/30 border border-stone-800/50 hover:bg-stone-900/50 transition-colors">
+                  <div className="mt-1 text-spirit-gold">{opt.icon}</div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-200">{opt.label}</p>
+                    <p className="text-[10px] text-stone-500 leading-tight italic">{opt.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="p-5 rounded-2xl bg-spirit-gold/10 border-2 border-spirit-gold/30 relative overflow-hidden group shadow-[0_0_20px_rgba(194,156,109,0.1)]">
             <div className="absolute top-0 right-0 p-3 opacity-30 group-hover:opacity-60 transition-opacity">
               <Sparkles className="w-5 h-5 text-spirit-gold" />
@@ -305,6 +350,27 @@ export default function App() {
                   <Clock className="w-4 h-4" />
                   <div className="flex-1"><p className="text-xs font-bold uppercase tracking-widest">{id}</p></div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 border-b border-stone-800/50 pb-3 flex items-center">
+              <BookOpen className="w-3 h-3 mr-2" /> Biblioteca de Ayuda
+            </h3>
+            <div className="grid grid-cols-1 gap-2">
+              {CONJUGATION_EXAMPLES[activeRoom].map((item, i) => (
+                <motion.div 
+                  key={i} 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="p-3 rounded-xl bg-stone-950/60 border border-stone-800/50 hover:border-spirit-gold/30 group cursor-default"
+                >
+                  <p className="text-[10px] font-black text-stone-500 mb-1 tracking-widest">{item.verb}</p>
+                  <p className="text-sm font-bold text-stone-100 group-hover:text-spirit-gold transition-colors">{item.example}</p>
+                  <p className="text-[10px] text-stone-500 italic mt-1 group-hover:text-stone-300 transition-colors">💡 {item.tip}</p>
+                </motion.div>
               ))}
             </div>
           </div>
