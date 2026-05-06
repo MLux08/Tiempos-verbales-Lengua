@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cinzel", serif;
+  --font-sans: "Quicksand", sans-serif;
+  --font-body: "Georgia", "Times New Roman", serif;
+  
+  --color-spirit-gold: #c29c6d;
+  --color-spirit-bone: #f5f5dc;
+  --color-spirit-dark: #0c0a09;
+  --color-spirit-accent: #d4af37;
+  --color-spirit-glow: rgba(194, 156, 109, 0.15);
+}
+
+@layer base {
+  body {
+    @apply bg-spirit-dark text-spirit-bone font-sans overflow-hidden antialiased;
+  }
+
+  h1, h2, h3, .font-serif {
+    @apply font-serif;
+  }
+}
+
+.micro-caps {
+  @apply font-sans text-[10px] font-semibold uppercase tracking-[0.15em] text-[#6e675e];
+}
+
+.atmosphere {
+  background: radial-gradient(circle at 50% 30%, #2a2520 0%, transparent 70%), 
+              radial-gradient(circle at 10% 80%, #3d342a 0%, transparent 50%);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: -1;
+}
+
+.gear-rotate {
+  animation: rotate 20s linear infinite;
+}
+
+.gear-rotate-reverse {
+  animation: rotate-reverse 25s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.clock-bg {
+  mask-image: radial-gradient(circle, black 40%, transparent 80%);
+  filter: sepia(1) contrast(0.8) brightness(0.4);
+}
+
+.glass-panel {
+  @apply bg-[#191614]/70 backdrop-blur-[20px] border border-spirit-gold/20;
+}
+
+.spirit-bubble {
+  @apply bg-[#1e1b19]/80 border-l-[3px] border-spirit-gold shadow-[0_4px_20px_rgba(0,0,0,0.4)] rounded-r-2xl rounded-tl-2xl;
+}
+
+.user-bubble {
+  @apply bg-spirit-gold/10 border border-spirit-gold/20 rounded-l-2xl rounded-tr-2xl;
+}
+
+.ghost-glow {
+  filter: drop-shadow(0 0 10px var(--color-spirit-gold));
+}
+
+.presence-meter {
+  @apply h-1 bg-white/10 rounded-full overflow-hidden;
+}
+
+.presence-fill {
+  @apply h-full bg-spirit-gold shadow-[0_0_10px_var(--color-spirit-gold)] transition-all duration-1000;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(194, 156, 109, 0.4);
+  border-radius: 10px;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, transparent 20%, rgba(12,10,9,0.9) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
