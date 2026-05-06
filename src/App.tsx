@@ -74,13 +74,13 @@ export default function App() {
 
   useEffect(() => {
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg?.role === 'assistant' && messages.length > 1) {
+    if (lastMsg?.role === 'assistant') {
       const text = lastMsg.content.toLowerCase();
       if (text.includes('presente')) setActiveRoom('presente');
       if (text.includes('futuro')) setActiveRoom('futuro');
-      const matches = lastMsg.content.match(/<strong>(.*?)<\/strong>/g);
+      const matches = lastMsg.content.match(/<strong[^>]*>(.*?)<\/strong>/g);
       if (matches) {
-        const verbs = matches.map(m => m.replace(/<\/?strong>/g, ''));
+        const verbs = matches.map(m => m.replace(/<[^>]+>/g, ''));
         setRecoveredVerbs(prev => Array.from(new Set([...prev, ...verbs])));
       }
       setPresence(prev => {
@@ -181,31 +181,59 @@ export default function App() {
         )}
       </AnimatePresence>
       
-      <header className="relative z-10 flex items-center justify-between px-6 md:px-10 py-6 glass-panel border-b-0">
-        <div className="flex items-center space-x-6">
-          <motion.div 
-            animate={{ boxShadow: [`0 0 20px rgba(194, 156, 109, ${presence/200})`, `0 0 40px rgba(194, 156, 109, ${presence/150})`, `0 0 20px rgba(194, 156, 109, ${presence/200})`] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full border border-stone-700 bg-stone-950"
-          >
-            <Ghost className="w-8 h-8 text-spirit-gold ghost-glow" />
-          </motion.div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-[0.2em] italic font-serif text-stone-100">ECO</h1>
-            <p className="micro-caps">Tu guía para aprender los verbos</p>
+      <header className="relative z-10 flex flex-col glass-panel border-b-0">
+        <div className="flex items-center justify-between px-6 md:px-10 py-6">
+          <div className="flex items-center space-x-6">
+            <motion.div 
+              animate={{ 
+                y: [0, -8, 0],
+                rotate: [0, -3, 3, 0],
+                boxShadow: [`0 0 20px rgba(194, 156, 109, ${presence/200})`, `0 0 40px rgba(194, 156, 109, ${presence/150})`, `0 0 20px rgba(194, 156, 109, ${presence/200})`] 
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full border border-stone-700 bg-stone-950 p-2 overflow-hidden relative"
+            >
+              <img 
+                src="https://img.icons8.com/stickers/200/ghost.png" 
+                alt="Eco Ghost"
+                className="w-full h-full object-contain z-10"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-spirit-gold/10 blur-md rounded-full" />
+            </motion.div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold tracking-[0.2em] italic font-serif text-stone-100">ECO</h1>
+              <p className="micro-caps">Tu guía para aprender los verbos</p>
+            </div>
+          </div>
+          <div className="hidden lg:flex flex-col items-end space-y-2">
+            <div className="w-48">
+              <div className="flex justify-between mb-1">
+                <span className="micro-caps">Presencia de Eco</span>
+                <span className="micro-caps text-spirit-gold">{presence}%</span>
+              </div>
+              <div className="presence-meter">
+                <motion.div className="presence-fill" animate={{ width: `${presence}%` }} transition={{ type: 'spring' }} />
+              </div>
+            </div>
+            <span className="micro-caps opacity-60">Sincronía: {activeRoom.toUpperCase()}</span>
           </div>
         </div>
-        <div className="hidden lg:flex flex-col items-end space-y-2">
-          <div className="w-48">
-            <div className="flex justify-between mb-1">
-              <span className="micro-caps">Presencia de Eco</span>
-              <span className="micro-caps text-spirit-gold">{presence}%</span>
-            </div>
-            <div className="presence-meter">
-              <motion.div className="presence-fill" animate={{ width: `${presence}%` }} transition={{ type: 'spring' }} />
-            </div>
+        
+        {/* Mobile Stats Bar */}
+        <div className="lg:hidden flex border-t border-stone-800/50 bg-stone-950/30 px-6 py-2 items-center justify-around">
+          <div className="flex items-center space-x-2">
+            <Activity className="w-3 h-3 text-spirit-gold" />
+            <span className="text-[10px] uppercase font-bold tracking-widest text-stone-400">Verbos: {recoveredVerbs.length}</span>
           </div>
-          <span className="micro-caps opacity-60">Sincronía: {activeRoom.toUpperCase()}</span>
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-3 h-3 text-spirit-gold" />
+            <span className="text-[10px] uppercase font-bold tracking-widest text-stone-400">Logros: {achievements.filter(a => a.unlocked).length}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Clock className="w-3 h-3 text-spirit-gold" />
+            <span className="text-[10px] uppercase font-bold tracking-widest text-stone-400">{activeRoom}</span>
+          </div>
         </div>
       </header>
 
@@ -229,7 +257,7 @@ export default function App() {
           </main>
         </section>
 
-        <aside className="hidden xl:flex w-80 glass-panel border-l border-stone-800/50 p-8 flex-col space-y-8">
+        <aside className="hidden xl:flex w-80 glass-panel border-l border-stone-800/50 p-8 flex-col space-y-8 overflow-y-auto custom-scrollbar">
           <div className="space-y-4">
             <h3 className="micro-caps border-b border-stone-800 pb-2">Tiempos del Verbo</h3>
             <div className="space-y-3">
@@ -247,7 +275,7 @@ export default function App() {
             <div className="flex flex-wrap gap-2">
               {recoveredVerbs.length === 0 ? <p className="text-[10px] italic text-stone-600">Analiza un verbo para empezar...</p> : 
                 recoveredVerbs.map((v, i) => (
-                  <motion.span key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} className="px-2 py-1 bg-stone-900 border border-spirit-gold/20 rounded text-[10px] text-spirit-gold uppercase font-bold tracking-tighter">
+                  <motion.span key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} className="px-3 py-1 bg-stone-900 border border-spirit-gold/40 rounded-full text-xs text-spirit-gold uppercase font-bold tracking-tight shadow-[0_0_10px_rgba(194,156,109,0.1)]">
                     {v}
                   </motion.span>
                 ))
