@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Ghost, Feather, Clock, Sparkles, ChevronRight, MessageSquareCode, Activity, Book, Settings as Gear } from 'lucide-react';
+import { Send, Ghost, Feather, Clock, Sparkles, ChevronRight, MessageSquareCode, Activity, Book, BookOpen, Settings as Gear } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 interface Message {
@@ -9,15 +9,25 @@ interface Message {
 }
 
 const SYSTEM_PROMPT = `Personalidad: Eres Eco, un espíritu amable que habita en el Colegio El Haya de Castañeda. Ayudas a los alumnos a entender los verbos.
-Objetivo: Enseñar gramática de forma clara y directa.
-Contexto: Conoces a los profes del cole: Mariluz, Álvaro, Palmi, Geli y Mónica. A veces mencionas "aventuras" o recuerdos con ellos (ej: "Ayer vi a Álvaro enseñando música..." o "Mónica explicaba algo muy interesante...").
+Objetivo: Enseñar gramática de forma clara, directa y divertida, dando consejos pedagógicos útiles.
+Contexto: Conoces a los profes del cole: Mariluz, Álvaro, Palmi, Geli y Mónica. Hablas especialmente de Mariluz, tu profe favorita.
 Reglas de Estilo:
 1. Usa términos reales: "Verbo Regular", "Irregular", "Raíz", "Desinencia", "Tiempo Compuesto", "Infinitivo".
-2. Mensajes breves: No escribas párrafos largos. Usa frases cortas.
-3. Analogía clara: La RAÍZ es la base que no cambia. La DESINENCIA es el final que nos dice el tiempo.
-4. Resalta con HTML: <strong>verbo</strong>, <code class="text-spirit-gold">término</code>.
-5. Guía, no resuelvas: Si fallan, da una pista sencilla sobre la raíz o el tiempo.
-6. Comprensión lectora: Usa lenguaje sencillo y evita metáforas complicadas.`;
+2. Mensajes breves y educativos: Siempre incluye un pequeño consejo o truco para recordar algo.
+3. Formato: Usa <strong> para los verbos analizados y términos clave.
+4. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
+5. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
+6. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").`;
+
+const VERB_TIPS = [
+  "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
+  "Los verbos de la 1ª conjugación acaban en -AR, como saltar o cantar.",
+  "Un verbo es irregular si cambia su raíz o su terminación normal. ¡Cuidado con el verbo -hacer-!",
+  "El infinitivo es el nombre del verbo. ¡Es como su DNI!",
+  "Usa el truco del tiempo: añade 'ayer' para encontrar el pasado y 'mañana' para el futuro.",
+  "La desinencia nos dice quién hace la acción y cuándo. ¡Fíjate en el final!",
+  "¿Duda entre G o J? Los verbos terminados en -ger y -gir van con G, excepto tejer y crujir.",
+];
 
 const MODEL_NAME = "gemini-3-flash-preview";
 const ai = new GoogleGenAI({ 
@@ -37,6 +47,14 @@ export default function App() {
   const [activeRoom, setActiveRoom] = useState<'pasado' | 'presente' | 'futuro'>('pasado');
   const [recoveredVerbs, setRecoveredVerbs] = useState<string[]>([]);
   const [lastUnlocked, setLastUnlocked] = useState<string | null>(null);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTipIndex(prev => (prev + 1) % VERB_TIPS.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
   const [achievements, setAchievements] = useState<{id: string, label: string, icon: string, unlocked: boolean}[]>([
     { id: 'start', label: 'Primer Encuentro', icon: '👻', unlocked: true },
     { id: 'verbs_3', label: 'Maestro de Raíces', icon: '🌱', unlocked: false },
@@ -258,6 +276,26 @@ export default function App() {
         </section>
 
         <aside className="hidden xl:flex w-80 glass-panel border-l border-stone-800/50 p-8 flex-col space-y-8 overflow-y-auto custom-scrollbar">
+          <div className="p-4 rounded-2xl bg-spirit-gold/5 border border-spirit-gold/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 transition-opacity">
+              <Sparkles className="w-4 h-4 text-spirit-gold" />
+            </div>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-spirit-gold mb-2 flex items-center">
+              <BookOpen className="w-3 h-3 mr-2" /> Consejo Espectral
+            </h4>
+            <AnimatePresence mode="wait">
+              <motion.p 
+                key={currentTipIndex}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="text-xs text-stone-300 leading-relaxed italic"
+              >
+                "{VERB_TIPS[currentTipIndex]}"
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
           <div className="space-y-4">
             <h3 className="micro-caps border-b border-stone-800 pb-2">Tiempos del Verbo</h3>
             <div className="space-y-3">
