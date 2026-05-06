@@ -68,6 +68,10 @@
   @apply bg-[#1e1b19]/80 border-l-[3px] border-spirit-gold shadow-[0_4px_20px_rgba(0,0,0,0.4)] rounded-r-2xl rounded-tl-2xl;
 }
 
+.spirit-bubble strong, .user-bubble strong {
+  @apply text-spirit-accent font-bold px-1.5 py-0.5 rounded-md bg-spirit-gold/10 inline-block;
+}
+
 .user-bubble {
   @apply bg-spirit-gold/10 border border-spirit-gold/20 rounded-l-2xl rounded-tr-2xl;
 }

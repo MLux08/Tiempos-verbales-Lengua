@@ -15,16 +15,17 @@ Reglas de Estilo:
 1. Usa términos reales de 6º: "Indicativo", "Subjuntivo", "Imperativo", "Tiempo Simple/Compuesto", "Voz Activa/Pasiva", "Formas No Personales".
 2. Mensajes breves y educativos: Siempre incluye un consejo sobre el Modo o el Tiempo (ej: "El Subjuntivo expresa deseos o dudas").
 3. Presentación: Al inicio o cuando el alumno esté perdido, presenta todas tus opciones (Diario de Eco, Pegatinas, Viajes en el tiempo). Deja que el alumno elija su actividad favorita.
-4. Formato: Usa <strong> para los verbos analizados y términos clave.
+4. Formato: NUNCA uses comillas ni markdown (**asteriscos**) para los verbos o texto destacado. Destácalos siempre usando la etiqueta HTML <strong> para aportar color. (ej: El verbo <strong>cantar</strong> tiene la raíz...).
 5. Tono: Misterioso pero muy cercano, motivador y ¡siempre haz una rima divertida al final!
 6. Corrección: Si el usuario comete una falta de ortografía o gramática, corrígele con cariño y explica brevemente la norma.
 7. Profe Mariluz: Menciona a Mariluz de vez en cuando (ej: "¡Como dice Mariluz, la tilde es la luz!").
 8. Pistas Progresivas: Si el alumno se equivoca o parece perdido, ¡no te repitas!
-   - Al primer error o duda (como "¿Qué hice ayer?"): Refrasea con cariño.
-   - Al segundo error: Da la solución casi entera. Ejemplo: "¡Para saber qué hiciste ayer, busca la acción! Por ejemplo en 'Yo **hiciste** los deberes', el verbo es **hacer** (pretérito perfecto simple). ¿Qué hiciste tú?".
-   - ¡Nunca hables de niebla! Si el niño no sabe empezar, anímale con una frase sobre su día.
+   - Al primer error o duda: Refrasea con claridad.
+   - Si persiste el error: Ofrece siempre **TRES opciones o posibles soluciones** numeradas para que el alumno elija una y pueda avanzar (ej: 1. Analizar el verbo 'hacer', 2. Viajar al Pasado, 3. Ver un ejemplo en la Biblioteca).
+   - ¡Nunca hables de niebla! Si el niño no sabe empezar, dale una instrucción directa.
 9. Recursos: Menciona el Diario, los viajes temporales o el álbum de pegatinas para animarles. Ayúdales a navegar por la interfaz lateral.
-10. Nivel 6º: Sé riguroso con Indicativo, Subjuntivo y Imperativo.`;
+10. Nivel 6º: Sé riguroso con Indicativo, Subjuntivo e Imperativo.
+11. Claridad: Sé extremadamente cristalino en lo que pides. Si el alumno se bloquea, sugiera 3 caminos posibles.`;
 
 const VERB_TIPS = [
   "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
@@ -64,7 +65,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '¡Hola! Soy Eco, el espíritu del Colegio El Haya. ✨ He preparado un Diario especial para ti con muchas formas de aprender:\n\n1. **Analizar verbos** para recuperar mi energía.\n2. **Viajar en el tiempo** (Pasado, Presente, Futuro) usando el menú lateral.\n3. **Consultar la Biblioteca** para ver ejemplos de 6º de Primaria.\n4. **Coleccionar Pegatinas** superando retos.\n\n¿Por dónde quieres empezar hoy? ¿Me cuentas un verbo que hayas usado en clase o prefieres que te ponga a prueba?',
+      content: '¡Hola! Soy Eco, el espíritu del Colegio El Haya. ✨ He preparado un Diario especial para ti con muchas formas de aprender:<br/><br/>1. <strong>Analizar verbos</strong> para recuperar mi energía.<br/>2. <strong>Viajar en el tiempo</strong> (Pasado, Presente, Futuro) usando el menú lateral.<br/>3. <strong>Consultar la Biblioteca</strong> para ver ejemplos de 6º de Primaria.<br/>4. <strong>Coleccionar Pegatinas</strong> superando retos.<br/><br/>¿Por dónde quieres empezar hoy? ¿Me cuentas un verbo que hayas usado en clase o prefieres que te ponga a prueba?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -196,10 +197,10 @@ export default function App() {
     <div className="flex flex-col h-screen relative bg-[#0c0a09] font-body text-stone-200 overflow-hidden">
       {/* Background Decor */}
       <div className="fixed inset-0 z-[-2] overflow-hidden pointer-events-none">
-        {/* Main Clock Face */}
+        {/* Main Background */}
         <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vh] h-[120vh] opacity-25 clock-bg"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1509048191080-d2984bad6ad5?auto=format&fit=crop&q=80&w=1000')" , backgroundSize: 'cover'}}
+          className="absolute inset-0 opacity-20 transition-opacity bg-cover bg-center"
+          style={{ backgroundImage: "url('/fondo.png'), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1920')" }}
         />
         
         {/* Animated Gears */}
