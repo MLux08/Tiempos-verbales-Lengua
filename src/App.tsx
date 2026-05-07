@@ -60,7 +60,7 @@ const CONJUGATION_EXAMPLES = {
   ]
 };
 
-const MODEL_NAME = "gemini-2.0-flash";
+const MODEL_NAME = "gemini-3-flash-preview";
 
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([

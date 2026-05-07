@@ -18,14 +18,23 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  const ai = new GoogleGenAI({ 
-    apiKey: process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY || "" 
-  });
+  let ai: GoogleGenAI | null = null;
+  const getAi = () => {
+    if (!ai) {
+      const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Missing Gemini API Key");
+      }
+      ai = new GoogleGenAI({ apiKey });
+    }
+    return ai;
+  };
 
   app.post("/api/chat", async (req, res) => {
     try {
+      const aiClient = getAi();
       const { model, contents } = req.body;
-      const result = await ai.models.generateContent({ model, contents });
+      const result = await aiClient.models.generateContent({ model, contents });
       res.json({ text: result.text });
     } catch (error) {
       console.error("Error from generation:", error);
