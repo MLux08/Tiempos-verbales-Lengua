@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, Ghost, Feather, Clock, Sparkles, ChevronRight, MessageSquareCode, Activity, Book, BookOpen, Settings as Gear } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 
 interface Message {
   role: 'assistant' | 'user';
@@ -62,9 +61,6 @@ const CONJUGATION_EXAMPLES = {
 };
 
 const MODEL_NAME = "gemini-2.0-flash";
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY || "" 
-});
 
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([
@@ -218,7 +214,17 @@ export default function App() {
         contents[firstUserIndex].parts[0].text = `[SISTEMA: ${SYSTEM_PROMPT}]\n\nUSUARIO: ${contents[firstUserIndex].parts[0].text}`;
       }
 
-      const result = await ai.models.generateContent({ model: MODEL_NAME, contents: contents });
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: MODEL_NAME, contents })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      const result = await response.json();
       let text = result.text || '...';
       let forceOptions = false;
       if (text.includes('[MOSTRAR_AYUDA]')) {
