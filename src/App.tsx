@@ -61,7 +61,7 @@ const CONJUGATION_EXAMPLES = {
   ]
 };
 
-const MODEL_NAME = "gemini-3-flash-preview";
+const MODEL_NAME = "gemini-2.0-flash";
 const ai = new GoogleGenAI({ 
   apiKey: process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY || "" 
 });
@@ -197,11 +197,22 @@ export default function App() {
     whisperAudio.current?.play().catch(() => {});
 
     try {
-      const contents = messages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-      }));
+      const contents = [];
+      for (const m of messages) {
+        if (m.role === 'assistant') {
+          if (contents.length === 0) {
+            // First message must be user, skip system's initial greeting in history
+            // Actually, we can just assign the greeting as a model message if there's a user dummy before it, but just skipping is easier and more robust
+            continue; 
+          }
+          contents.push({ role: 'model', parts: [{ text: m.content }] });
+        } else {
+          contents.push({ role: 'user', parts: [{ text: m.content }] });
+        }
+      }
       contents.push({ role: 'user', parts: [{ text: userText }] });
+
+      // If array is empty, which shouldn't happen, fallback.
       const firstUserIndex = contents.findIndex(c => c.role === 'user');
       if (firstUserIndex !== -1) {
         contents[firstUserIndex].parts[0].text = `[SISTEMA: ${SYSTEM_PROMPT}]\n\nUSUARIO: ${contents[firstUserIndex].parts[0].text}`;
@@ -216,7 +227,7 @@ export default function App() {
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: text, forceOptions }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Ups, no te he entendido bien... ¿puedes decirme el verbo otra vez de forma más clarita? ¡Eco está atento!' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Ups, mi conexión espiritual falló un poco... ¿Puedes repetir tu mensaje?' }]);
     } finally {
       setIsLoading(false);
     }
