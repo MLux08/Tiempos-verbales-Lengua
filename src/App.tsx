@@ -189,12 +189,10 @@ export default function App() {
     });
   }, [recoveredVerbs, presence, activeRoom]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    const userMessage = input.trim();
-    setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+  const sendMessage = async (userText: string) => {
+    if (isLoading) return;
+    setShowIdleOptions(false);
+    setMessages((prev) => [...prev, { role: 'user', content: userText }]);
     setIsLoading(true);
     whisperAudio.current?.play().catch(() => {});
 
@@ -203,7 +201,7 @@ export default function App() {
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
       }));
-      contents.push({ role: 'user', parts: [{ text: userMessage }] });
+      contents.push({ role: 'user', parts: [{ text: userText }] });
       const firstUserIndex = contents.findIndex(c => c.role === 'user');
       if (firstUserIndex !== -1) {
         contents[firstUserIndex].parts[0].text = `[SISTEMA: ${SYSTEM_PROMPT}]\n\nUSUARIO: ${contents[firstUserIndex].parts[0].text}`;
@@ -224,37 +222,16 @@ export default function App() {
     }
   };
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    const userMessage = input.trim();
+    setInput('');
+    await sendMessage(userMessage);
+  };
+
   const handleQuickReply = async (text: string) => {
-    if (isLoading) return;
-    setShowIdleOptions(false);
-    setMessages((prev) => [...prev, { role: 'user', content: text }]);
-    setIsLoading(true);
-    whisperAudio.current?.play().catch(() => {});
-
-    try {
-      const contents = messages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-      }));
-      contents.push({ role: 'user', parts: [{ text }] });
-      const firstUserIndex = contents.findIndex(c => c.role === 'user');
-      if (firstUserIndex !== -1) {
-        contents[firstUserIndex].parts[0].text = `[SISTEMA: ${SYSTEM_PROMPT}]\n\nUSUARIO: ${contents[firstUserIndex].parts[0].text}`;
-      }
-
-      const result = await ai.models.generateContent({ model: MODEL_NAME, contents: contents });
-      let textContent = result.text || '...';
-      let forceOptions = false;
-      if (textContent.includes('[MOSTRAR_AYUDA]')) {
-        forceOptions = true;
-        textContent = textContent.replace(/\[MOSTRAR_AYUDA\]/g, '').trim();
-      }
-      setMessages((prev) => [...prev, { role: 'assistant', content: textContent, forceOptions }]);
-    } catch (error) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Ups, no te he entendido bien... ¿puedes decirme el verbo otra vez de forma más clarita? ¡Eco está atento!' }]);
-    } finally {
-      setIsLoading(false);
-    }
+    await sendMessage(text);
   };
 
   return (
@@ -263,9 +240,10 @@ export default function App() {
       <div className="fixed inset-0 z-[-2] overflow-hidden pointer-events-none">
         {/* Main Background */}
         <div 
-          className="absolute inset-0 opacity-50 transition-opacity bg-cover bg-center"
-          style={{ backgroundImage: "url('/fondo.png')" }}
+          className="absolute inset-0 opacity-80 transition-opacity bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1920')" }}
         />
+        <div className="absolute inset-0 bg-stone-950/40" />
         
         {/* Animated Gears */}
         <Gear className="absolute -top-10 -left-10 w-40 h-40 text-spirit-gold/20 gear-rotate opacity-40" />
