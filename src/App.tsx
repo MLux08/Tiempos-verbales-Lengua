@@ -70,7 +70,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '¡Hola! Soy Eco, el espíritu del Colegio El Haya. ✨ He preparado un Diario especial para ti con muchas formas de aprender:<br/><br/>1. <strong>Analizar verbos</strong> para recuperar mi energía.<br/>2. <strong>Viajar en el tiempo</strong> (Pasado, Presente, Futuro) usando el menú lateral.<br/>3. <strong>Consultar la Biblioteca</strong> para ver ejemplos de 6º de Primaria.<br/>4. <strong>Coleccionar Pegatinas</strong> superando retos.<br/><br/>¿Por dónde quieres empezar hoy? ¿Me cuentas un verbo que hayas usado en clase o prefieres que te ponga a prueba?',
+      content: '¡Hola! Soy Eco, el espíritu del Colegio El Haya. ✨ He preparado un Diario especial para ti con muchas formas de aprender:<br/><br/>1. <strong>Analizar verbos</strong> para recuperar mi energía.<br/>2. <strong>Viajar en el tiempo</strong> (Pasado, Presente, Futuro) usando el menú lateral.<br/>3. <strong>Consultar la Biblioteca</strong> para ver ejemplos de 6º de Primaria.<br/>4. <strong>Coleccionar Pegatinas</strong> superando retos.<br/><br/>Para empezar nuestra aventura... ¿Por qué no analizamos un verbo juntos? ¡Escribe uno y empezamos!',
     },
   ]);
   const [input, setInput] = useState('');
