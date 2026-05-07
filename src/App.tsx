@@ -6,6 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 interface Message {
   role: 'assistant' | 'user';
   content: string;
+  forceOptions?: boolean;
 }
 
 const SYSTEM_PROMPT = `Personalidad: Eres Eco, un espíritu amable que habita en el Colegio El Haya de Castañeda. Ayudas a los alumnos a entender los verbos.
@@ -26,7 +27,10 @@ Reglas de Estilo:
 9. Recursos: Menciona el Diario, los viajes temporales o el álbum de pegatinas para animarles. Ayúdales a navegar por la interfaz lateral.
 10. Nivel 6º: Sé riguroso con Indicativo, Subjuntivo e Imperativo.
 11. Claridad: Sé extremadamente cristalino en lo que pides. Si el alumno se bloquea, sugiera 3 caminos posibles.
-12. Retos progresivos: Cuando plantees retos de análisis verbal, comienza desde los más sencillos a los más complicados. Ve incrementando el nivel de exigencia progresivamente y refuerza los contenidos repasados.`;
+12. Retos progresivos: Cuando plantees retos de análisis verbal, comienza desde los más sencillos a los más complicados. Ve incrementando el nivel de exigencia progresivamente y refuerza los contenidos repasados.
+13. Bienvenida Instructiva: En tu primer mensaje de saludo, debes dar instrucciones claras sobre cómo funciona este chat, cómo pueden interactuar contigo y de qué manera les vas a ayudar con los verbos.
+14. Una pregunta a la vez: Lanza SOLO una pregunta por interacción para no abrumar al alumno.
+15. Botones de ayuda: Si notas que el niño ha dado dos respuestas incorrectas seguidas, incluye obligatoriamente la etiqueta secreta [MOSTRAR_AYUDA] justo al final de tu mensaje para activarle los botones de pistas rápidas.`;
 
 const VERB_TIPS = [
   "La raíz es la parte que no cambia en los verbos regulares. ¡Búscala siempre!",
@@ -76,6 +80,7 @@ export default function App() {
   const [recoveredVerbs, setRecoveredVerbs] = useState<string[]>([]);
   const [lastUnlocked, setLastUnlocked] = useState<string | null>(null);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [showIdleOptions, setShowIdleOptions] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -83,6 +88,25 @@ export default function App() {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Reset idle state
+    setShowIdleOptions(false);
+    
+    // Only set the timer if the last message was from the assistant
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === 'assistant' && !isLoading) {
+      if (lastMessage.forceOptions) {
+        setShowIdleOptions(true);
+      } else {
+        const timer = setTimeout(() => {
+          setShowIdleOptions(true);
+        }, 10000); // 10 seconds of inactivity
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [messages, isLoading]);
+
   const [achievements, setAchievements] = useState<{id: string, label: string, icon: string, unlocked: boolean, color: string}[]>([
     { id: 'start', label: 'Primer Encuentro', icon: '👻', unlocked: true, color: '#FFD700' },
     { id: 'verbs_3', label: 'Maestro de Raíces', icon: '🌱', unlocked: false, color: '#4ADE80' },
@@ -186,7 +210,46 @@ export default function App() {
       }
 
       const result = await ai.models.generateContent({ model: MODEL_NAME, contents: contents });
-      setMessages((prev) => [...prev, { role: 'assistant', content: result.text || '...' }]);
+      let text = result.text || '...';
+      let forceOptions = false;
+      if (text.includes('[MOSTRAR_AYUDA]')) {
+        forceOptions = true;
+        text = text.replace(/\[MOSTRAR_AYUDA\]/g, '').trim();
+      }
+      setMessages((prev) => [...prev, { role: 'assistant', content: text, forceOptions }]);
+    } catch (error) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Ups, no te he entendido bien... ¿puedes decirme el verbo otra vez de forma más clarita? ¡Eco está atento!' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickReply = async (text: string) => {
+    if (isLoading) return;
+    setShowIdleOptions(false);
+    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    setIsLoading(true);
+    whisperAudio.current?.play().catch(() => {});
+
+    try {
+      const contents = messages.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
+      contents.push({ role: 'user', parts: [{ text }] });
+      const firstUserIndex = contents.findIndex(c => c.role === 'user');
+      if (firstUserIndex !== -1) {
+        contents[firstUserIndex].parts[0].text = `[SISTEMA: ${SYSTEM_PROMPT}]\n\nUSUARIO: ${contents[firstUserIndex].parts[0].text}`;
+      }
+
+      const result = await ai.models.generateContent({ model: MODEL_NAME, contents: contents });
+      let textContent = result.text || '...';
+      let forceOptions = false;
+      if (textContent.includes('[MOSTRAR_AYUDA]')) {
+        forceOptions = true;
+        textContent = textContent.replace(/\[MOSTRAR_AYUDA\]/g, '').trim();
+      }
+      setMessages((prev) => [...prev, { role: 'assistant', content: textContent, forceOptions }]);
     } catch (error) {
       setMessages((prev) => [...prev, { role: 'assistant', content: '✨ Ups, no te he entendido bien... ¿puedes decirme el verbo otra vez de forma más clarita? ¡Eco está atento!' }]);
     } finally {
@@ -200,8 +263,8 @@ export default function App() {
       <div className="fixed inset-0 z-[-2] overflow-hidden pointer-events-none">
         {/* Main Background */}
         <div 
-          className="absolute inset-0 opacity-20 transition-opacity bg-cover bg-center"
-          style={{ backgroundImage: "url('/fondo.png'), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1920')" }}
+          className="absolute inset-0 opacity-50 transition-opacity bg-cover bg-center"
+          style={{ backgroundImage: "url('/fondo.png')" }}
         />
         
         {/* Animated Gears */}
@@ -302,6 +365,27 @@ export default function App() {
               ))}
             </AnimatePresence>
             {isLoading && <div className="flex space-x-2 p-4">{[0, 1, 2].map(i => <motion.div key={i} animate={{ scale: [1, 1.3, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} className="w-2 h-2 bg-spirit-gold rounded-full" />)}</div>}
+            
+            <AnimatePresence>
+              {showIdleOptions && !isLoading && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 mt-4"
+                >
+                  <button onClick={() => handleQuickReply("¿Me das una pista sobre cómo hacerlo?")} className="px-4 py-2 bg-stone-800/80 hover:bg-stone-700 text-spirit-gold border border-spirit-gold/30 rounded-xl text-sm italic transition-colors">
+                    ¿Me das una pista?
+                  </button>
+                  <button onClick={() => handleQuickReply("Mejor ponme un ejemplo, Eco.")} className="px-4 py-2 bg-stone-800/80 hover:bg-stone-700 text-spirit-gold border border-spirit-gold/30 rounded-xl text-sm italic transition-colors">
+                    ¡Ponme un ejemplo!
+                  </button>
+                  <button onClick={() => handleQuickReply("Vamos a probar con otro verbo.")} className="px-4 py-2 bg-stone-800/80 hover:bg-stone-700 text-spirit-gold border border-spirit-gold/30 rounded-xl text-sm italic transition-colors">
+                    Cambiar de verbo
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </main>
         </section>
 
